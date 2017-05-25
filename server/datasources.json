@@ -1,0 +1,15 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "cloudantuk": {
+    "url": "u:u@u.com",
+    "database": "dbname",
+    "username": "username",
+    "password": "password",
+    "name": "name",
+    "modelIndex": "someindex",
+    "connector": "cloudant"
+  }
+}

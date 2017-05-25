@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cloudant Geo Exercise 2</title>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            Boundary Id or Doc Id: <input type="text" id="wardname" name="wardname" size="50">
+            <button id="button" onclick="myFunction()">Submit</button>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="map" style="width: 100%; height: 650px"></div>
+            </div>
+        </div>
+    </div>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.js'></script>
+    <script>
+        function myFunction() {
+            var c = document.getElementById("wardname").value;
+ $.getJSON('/api/geos/location/' + c, null, function onSuccess(data) {
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i])
+                        wardlayer.addData(data[i].geometry);
+                }
+            });
+        }
+        var map = L.map('map').setView([13.041, 77.618], 14);
+        //var map = L.map('map').setView([38.89399, -77.03659], 17);
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            id: 'mapbox.streets'
+        }).addTo(map);
+        var wardlayer;
+        wardlayer = L.geoJson(null, {
+            onEachFeature: onEachFeature
+        }).addTo(map);
+        var count = 0;
+        setInterval(function() {
+            //map.removeLayer(wardlayer);
+            $.getJSON("/api/geos?filter=%7B%22where%22%3A%7B%22doctype%22%3A%22boundary%22%7D%7D", null, function onSuccess(data) {
+                if (count < data.length) {
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i]) { // this skips non-GeoJSON docs, e.g. design documents
+                            data[i].geometry.name = data[i].id;
+                            wardlayer.addData(data[i].geometry);
+                        }
+                    }
+                    count = data.length;
+                }
+            });
+        }, 5000);
+
+        function onEachFeature(feature, layer) {
+            /*	if ( feature.properties ) {
+            		var pop = '';
+            		for (var k in feature.properties) {
+            			pop += '<b>' + k + ': </b> ' + feature.properties[k] + '<br/>';
+            		}
+            		// layer.bindPopup( JSON.stringify(feature.properties) );
+            		layer.bindPopup(pop);
+            	} */
+            layer.bindPopup(feature.name);
+//            layer.on({ // click: onClick // });
+        }
+
+        /* function onClick(e) {
+             map.removeLayer(wardlayer);
+         }*/
+//        function onClick(e) {
+//            console.log(e);
+//        }
+
+    </script>
+</body>

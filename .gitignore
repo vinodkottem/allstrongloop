@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+/manifest.yml
+node_modules
